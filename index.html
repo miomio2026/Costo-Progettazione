@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progettazione Costi Hedging Avanzata</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --primary-color: #ffc107;
+            --text-color: #333;
+            --border-color: #e0e0e0;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --blue-color: #007bff;
+            --matrix-bg: #0f172a;
+            --matrix-card: #1e293b;
+            --matrix-text: #f8fafc;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--matrix-bg);
+            color: var(--matrix-text);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: var(--matrix-card);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border: 1px solid #334155;
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 18px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            display: inline-block;
+            color: #fff;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #cbd5e1;
+        }
+
+        input, select {
+            padding: 10px;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            font-size: 15px;
+            background-color: #0f172a;
+            color: #fff;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .phase-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .phase-tab {
+            padding: 8px 16px;
+            background: #334155;
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        
+        .phase-tab.active {
+            background: var(--primary-color);
+            color: #000;
+            border-color: #d39e00;
+        }
+        
+        .phase-tab:hover:not(.active) {
+            background: #475569;
+        }
+
+        /* Toggle Button Group */
+        .toggle-group {
+            display: flex;
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-right: 1px solid #475569;
+        }
+        
+        .toggle-btn:last-child {
+            border-right: none;
+        }
+
+        .toggle-btn.active {
+            background: var(--primary-color);
+            color: #000;
+        }
+
+        /* Risultati Box */
+        .result-box {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .result-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .icon-blue { background: rgba(0, 123, 255, 0.1); color: #60a5fa; }
+        .icon-green { background: rgba(40, 167, 69, 0.1); color: #4ade80; }
+        .icon-red { background: rgba(220, 53, 69, 0.1); color: #f87171; }
+        .icon-yellow { background: rgba(255, 193, 7, 0.1); color: var(--primary-color); }
+
+        .result-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .result-title {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        .result-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .text-green { color: #4ade80; }
+        .text-red { color: #f87171; }
+        .text-blue { color: #60a5fa; }
+        
+        .sub-text {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        /* Tabella Scaglioni */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 1px solid #334155;
+        }
+
+        th {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+
+        td {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .step-circle {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: var(--primary-color);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .summary-card {
+            background: #0f172a;
+            color: white;
+            border: 1px solid #334155;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .summary-label {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        .summary-val {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .btn-reset {
+            background-color: #1e293b;
+            color: #f87171;
+            border: 1px solid #f87171;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn-reset:hover {
+            background-color: #f87171;
+            color: #fff;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- GESTIONE FASI -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2 style="margin: 0;">Struttura Piano</h2>
+                <button type="button" class="btn-reset" onclick="resetDati()">🔄 Ripristina Default</button>
+            </div>
+            
+            <div class="grid-2">
+                <div class="input-group">
+                    <label>Numero Fasi Challenge (Ch)</label>
+                    <input type="number" id="numCh" value="2" min="0" max="5" onchange="generaTabs()">
+                </div>
+                <div class="input-group">
+                    <label>Numero Fasi Funded (F)</label>
+                    <input type="number" id="numF" value="5" min="0" max="10" onchange="generaTabs()">
+                </div>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <label>Seleziona Fase da Modificare:</label>
+                <div class="phase-tabs" id="tabsContainer">
+                    <!-- Tabs generate via JS -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- INSERIMENTO DATI PER FASE SELEZIONATA -->
+        <div class="card" id="editorCard">
+            <h2>Parametri Fase: <span id="faseCorrenteLabel" style="color: var(--primary-color);">Ch1</span></h2>
+            <div class="grid-2">
+                <div class="input-group">
+                    <label>Costo Prop ($)</label>
+                    <input type="number" id="costoProp" oninput="salvaDatiFase()">
+                    <span class="sub-text">Costo base di riferimento.</span>
+                </div>
+                <div class="input-group">
+                    <label>Taglio Prop ($)</label>
+                    <input type="number" id="taglioProp" oninput="salvaDatiFase()">
+                </div>
+                <div class="input-group">
+                    <label>Target (%)</label>
+                    <input type="number" id="target" step="0.1" oninput="salvaDatiFase()">
+                </div>
+                <div class="input-group">
+                    <label>Frazionamento</label>
+                    <input type="number" id="frazionamento" min="1" max="10" oninput="salvaDatiFase()">
+                </div>
+                <div class="input-group">
+                    <label>Drawdown (%)</label>
+                    <input type="number" id="drawdown" step="0.1" oninput="salvaDatiFase()">
+                </div>
+                <div class="input-group">
+                    <label>Modalità Costo / Hedging</label>
+                    <div class="toggle-group">
+                        <button type="button" id="btnDinamico" class="toggle-btn active" onclick="setModoCosto('dinamico')">Dinamico (Yo-Yo)</button>
+                        <button type="button" id="btnStatico" class="toggle-btn" onclick="setModoCosto('statico')">Statico</button>
+                    </div>
+                    <span class="sub-text">Dinamico usa interesse composto. Statico è lineare (aggiunge +15% solo nelle Challenge).</span>
+                </div>
+                <div class="input-group" id="groupProfitSplit" style="display:none;">
+                    <label>Profit Split (%) - Solo Funded</label>
+                    <input type="number" id="profitSplit" value="75" step="1" oninput="salvaDatiFase()">
+                </div>
+                <div class="input-group" id="groupCostoPartenza">
+                    <label>Costo di partenza Challenge ($)</label>
+                    <input type="number" id="costoPartenza" oninput="salvaDatiFase()">
+                </div>
+            </div>
+        </div>
+
+        <!-- RISULTATI DASHBOARD FASE CORRENTE -->
+        <div class="grid-3" style="margin-bottom: 20px;">
+            <div class="result-box">
+                <div class="result-icon icon-blue">$</div>
+                <div class="result-info">
+                    <span class="result-title">Spesa senza bonus</span>
+                    <span class="result-value" id="resSpesa">$0.00</span>
+                    <span class="sub-text text-blue" id="subSpesa"></span>
+                </div>
+            </div>
+            
+            <div class="result-box">
+                <div class="result-icon icon-yellow">💰</div>
+                <div class="result-info">
+                    <span class="result-title">Costo netto (Bonus 0%)</span>
+                    <span class="result-value" id="resDeposito">$0.00</span>
+                </div>
+            </div>
+            
+            <div class="result-box" id="boxPayout" style="display:none;">
+                <div class="result-icon icon-green">📈</div>
+                <div class="result-info">
+                    <span class="result-title">Payout</span>
+                    <span class="result-value text-green" id="resPayout">+$0.00</span>
+                </div>
+            </div>
+
+            <div class="result-box">
+                <div class="result-icon icon-green">🔥</div>
+                <div class="result-info">
+                    <span class="result-title">Guadagno Bruciatura</span>
+                    <span class="result-value text-green" id="resGuadagno">+$0.00</span>
+                    <span class="sub-text" id="subGuadagno">Proporzionale a $0</span>
+                </div>
+            </div>
+            
+            <div class="result-box" id="boxGuadagnoFineCiclo" style="display:none;">
+                <div class="result-icon icon-green">🏆</div>
+                <div class="result-info">
+                    <span class="result-title">Guadagno Fine Ciclo Bruciatura</span>
+                    <span class="result-value text-green" id="resGuadagnoFineCiclo">+$0.00</span>
+                </div>
+            </div>
+
+            <div class="result-box">
+                <div class="result-icon icon-red" id="iconBilancio">💼</div>
+                <div class="result-info">
+                    <span class="result-title">Bilancio attuale</span>
+                    <span class="result-value text-red" id="resBilancio">-$0.00</span>
+                </div>
+            </div>
+            
+            <div class="result-box">
+                <div class="result-icon icon-yellow">📊</div>
+                <div class="result-info">
+                    <span class="result-title">Esposizione Massima Capitale</span>
+                    <span class="result-value" id="resEsposizione">$0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABELLA SCAGLIONI CON/SENZA OVERRIDE COSTO -->
+        <div class="card">
+            <h2>Dettaglio scaglioni (<span id="txtStepCount">3 step</span>)</h2>
+            <table>
+                <thead id="theadScaglioni">
+                    <!-- Generato da JS a seconda del Modalità Costo -->
+                </thead>
+                <tbody id="tabellaScaglioni">
+                    <!-- Generato da JS -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- RIEPILOGO TOTALE PIANO -->
+        <div class="card summary-card">
+            <h2>Riepilogo Globale</h2>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <span class="summary-label">Costo Acquisto Iniziale</span>
+                    <span class="summary-val" id="totAcquisto">$0.00</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Totale Spesa Hedge</span>
+                    <span class="summary-val" id="totHedge">$0.00</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Esposizione Max Totale</span>
+                    <span class="summary-val" style="color: #f87171;" id="totEsposizione">-$0.00</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Taglio Prop Finale</span>
+                    <span class="summary-val" style="color: #4ade80;" id="totFinale">$0.00</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let datiFasi = {};
+        let faseAttualeId = "Ch1";
+        
+        const defaultFase = {
+            costoProp: 700,
+            taglioProp: 50000,
+            target: 10,
+            drawdown: 10,
+            frazionamento: 3,
+            modoCosto: 'dinamico', 
+            profitSplit: 75,
+            costoPartenza: 445,
+            overrides: {}
+        };
+
+        function inizializzaDati() {
+            // Tenta di caricare i dati dalla memoria locale del browser
+            const savedData = localStorage.getItem('matrixProgettazioneData');
+            
+            if (savedData) {
+                try {
+                    const parsed = JSON.parse(savedData);
+                    document.getElementById('numCh').value = parsed.numCh || 2;
+                    document.getElementById('numF').value = parsed.numF || 5;
+                    datiFasi = parsed.datiFasi;
+                    faseAttualeId = Object.keys(datiFasi)[0] || "Ch1";
+                    generaTabs();
+                    return; // Esce dalla funzione usando i dati salvati
+                } catch(e) {
+                    console.error("Errore nel parsing del salvataggio:", e);
+                }
+            }
+
+            // Se non c'è salvataggio, usa i default di Matrix
+            datiFasi = {};
+            const numCh = parseInt(document.getElementById('numCh').value) || 0;
+            const numF = parseInt(document.getElementById('numF').value) || 0;
+            
+            for(let i=1; i<=numCh; i++) {
+                let id = "Ch" + i;
+                datiFasi[id] = JSON.parse(JSON.stringify(defaultFase));
+                if(i === 1) {
+                    datiFasi[id].costoProp = 700; datiFasi[id].target = 10; datiFasi[id].frazionamento = 3; datiFasi[id].modoCosto = 'statico';
+                } else if(i === 2) {
+                    datiFasi[id].costoProp = 1000; datiFasi[id].target = 5; datiFasi[id].frazionamento = 2; datiFasi[id].modoCosto = 'dinamico';
+                    datiFasi[id].overrides = {1: 1800, 2: 1800}; 
+                }
+            }
+            
+            for(let i=1; i<=numF; i++) {
+                let id = "F" + i;
+                datiFasi[id] = JSON.parse(JSON.stringify(defaultFase));
+                if(i === 1) {
+                    datiFasi[id].costoProp = 3000; datiFasi[id].target = 3; datiFasi[id].frazionamento = 4; datiFasi[id].profitSplit = 80; datiFasi[id].modoCosto = 'statico';
+                } else if (i === 4) {
+                    datiFasi[id].costoProp = 2500; datiFasi[id].target = 5; datiFasi[id].frazionamento = 4; datiFasi[id].profitSplit = 80; datiFasi[id].modoCosto = 'statico';
+                } else if (i === 5) {
+                    datiFasi[id].costoProp = 2400; datiFasi[id].target = 5; datiFasi[id].frazionamento = 4; datiFasi[id].profitSplit = 80; datiFasi[id].modoCosto = 'statico';
+                } else {
+                    datiFasi[id].costoProp = 3000; datiFasi[id].target = 3; datiFasi[id].frazionamento = 4; datiFasi[id].profitSplit = 80; datiFasi[id].modoCosto = 'statico';
+                }
+            }
+            
+            faseAttualeId = Object.keys(datiFasi)[0] || null;
+            generaTabs();
+        }
+        
+        function resetDati() {
+            if(confirm("Sei sicuro di voler cancellare tutti i dati salvati e tornare alle impostazioni originali?")) {
+                localStorage.removeItem('matrixProgettazioneData');
+                location.reload();
+            }
+        }
+
+        function salvaStorage() {
+            const dataToSave = {
+                numCh: document.getElementById('numCh').value,
+                numF: document.getElementById('numF').value,
+                datiFasi: datiFasi
+            };
+            localStorage.setItem('matrixProgettazioneData', JSON.stringify(dataToSave));
+        }
+
+        function generaTabs() {
+            const numCh = parseInt(document.getElementById('numCh').value) || 0;
+            const numF = parseInt(document.getElementById('numF').value) || 0;
+            const container = document.getElementById('tabsContainer');
+            container.innerHTML = '';
+            
+            const vecchiDati = {...datiFasi};
+            datiFasi = {};
+            
+            let idList = [];
+            
+            for(let i=1; i<=numCh; i++) {
+                let id = "Ch" + i;
+                idList.push(id);
+                datiFasi[id] = vecchiDati[id] || JSON.parse(JSON.stringify(defaultFase));
+            }
+            for(let i=1; i<=numF; i++) {
+                let id = "F" + i;
+                idList.push(id);
+                datiFasi[id] = vecchiDati[id] || JSON.parse(JSON.stringify(defaultFase));
+            }
+            
+            if(idList.length === 0) {
+                document.getElementById('editorCard').style.display = 'none';
+                return;
+            }
+            
+            document.getElementById('editorCard').style.display = 'block';
+            
+            if(!idList.includes(faseAttualeId)) {
+                faseAttualeId = idList[0];
+            }
+            
+            idList.forEach(id => {
+                const btn = document.createElement('div');
+                btn.className = `phase-tab ${id === faseAttualeId ? 'active' : ''}`;
+                btn.innerText = id;
+                btn.onclick = () => cambiaFase(id);
+                container.appendChild(btn);
+            });
+            
+            caricaFaseUI();
+            calcolaTutto();
+        }
+        
+        function cambiaFase(id) {
+            faseAttualeId = id;
+            
+            document.querySelectorAll('.phase-tab').forEach(el => {
+                el.classList.remove('active');
+                if(el.innerText === id) el.classList.add('active');
+            });
+            
+            caricaFaseUI();
+            calcolaTutto();
+        }
+        
+        function setModoCosto(modo) {
+            if(!faseAttualeId) return;
+            datiFasi[faseAttualeId].modoCosto = modo;
+            
+            document.getElementById('btnDinamico').className = 'toggle-btn ' + (modo === 'dinamico' ? 'active' : '');
+            document.getElementById('btnStatico').className = 'toggle-btn ' + (modo === 'statico' ? 'active' : '');
+            
+            salvaDatiFase();
+        }
+        
+        function updateOverride(step, val) {
+            if(!datiFasi[faseAttualeId].overrides) datiFasi[faseAttualeId].overrides = {};
+            datiFasi[faseAttualeId].overrides[step] = val;
+            calcolaTutto();
+        }
+        
+        function caricaFaseUI() {
+            if(!faseAttualeId || !datiFasi[faseAttualeId]) return;
+            
+            const dati = datiFasi[faseAttualeId];
+            document.getElementById('faseCorrenteLabel').innerText = faseAttualeId;
+            
+            document.getElementById('costoProp').value = dati.costoProp;
+            document.getElementById('taglioProp').value = dati.taglioProp;
+            document.getElementById('target').value = dati.target;
+            document.getElementById('drawdown').value = dati.drawdown;
+            document.getElementById('frazionamento').value = dati.frazionamento;
+            
+            document.getElementById('btnDinamico').className = 'toggle-btn ' + (dati.modoCosto === 'dinamico' ? 'active' : '');
+            document.getElementById('btnStatico').className = 'toggle-btn ' + (dati.modoCosto === 'statico' ? 'active' : '');
+            
+            const isFunded = faseAttualeId.startsWith("F");
+            
+            if(faseAttualeId === "Ch1") {
+                document.getElementById('groupCostoPartenza').style.display = 'flex';
+                document.getElementById('costoPartenza').value = dati.costoPartenza;
+            } else {
+                document.getElementById('groupCostoPartenza').style.display = 'none';
+            }
+            
+            if(isFunded) {
+                document.getElementById('groupProfitSplit').style.display = 'flex';
+                document.getElementById('profitSplit').value = dati.profitSplit || 75;
+                document.getElementById('boxPayout').style.display = 'flex';
+                document.getElementById('boxGuadagnoFineCiclo').style.display = 'flex';
+            } else {
+                document.getElementById('groupProfitSplit').style.display = 'none';
+                document.getElementById('boxPayout').style.display = 'none';
+                document.getElementById('boxGuadagnoFineCiclo').style.display = 'none';
+            }
+            
+            document.getElementById('txtStepCount').innerText = `${dati.frazionamento} step`;
+        }
+        
+        function salvaDatiFase() {
+            if(!faseAttualeId) return;
+            
+            const currentModo = datiFasi[faseAttualeId].modoCosto;
+            const currentOverrides = datiFasi[faseAttualeId].overrides || {};
+            
+            datiFasi[faseAttualeId] = {
+                costoProp: parseFloat(document.getElementById('costoProp').value) || 0,
+                taglioProp: parseFloat(document.getElementById('taglioProp').value) || 0,
+                target: parseFloat(document.getElementById('target').value) || 0,
+                drawdown: parseFloat(document.getElementById('drawdown').value) || 0,
+                frazionamento: parseInt(document.getElementById('frazionamento').value) || 1,
+                modoCosto: currentModo,
+                profitSplit: parseFloat(document.getElementById('profitSplit').value) || 75,
+                costoPartenza: parseFloat(document.getElementById('costoPartenza').value) || 0,
+                overrides: currentOverrides
+            };
+            
+            document.getElementById('txtStepCount').innerText = `${datiFasi[faseAttualeId].frazionamento} step`;
+            calcolaTutto();
+        }
+
+        function calcolaTutto() {
+            let spesaTotaleHedge = 0;
+            let costoAcquistoIniziale = datiFasi["Ch1"] ? datiFasi["Ch1"].costoPartenza : 0;
+            let valoreAccountFinale = 0;
+            
+            const chiavi = Object.keys(datiFasi);
+            let bilancioCumulato = 0; 
+            let esposizioneMaxGlobale = 0;
+            
+            for(let i=0; i<chiavi.length; i++) {
+                const id = chiavi[i];
+                const isFunded = id.startsWith("F");
+                let dati = datiFasi[id];
+                if(!dati.overrides) dati.overrides = {};
+                
+                valoreAccountFinale = dati.taglioProp;
+                
+                const targetAssoluto = dati.taglioProp * (dati.target / 100);
+                const tpAuto = targetAssoluto / dati.frazionamento;
+                
+                let isDinamico = (dati.modoCosto === 'dinamico');
+                
+                let spesaFaseBase = 0;
+                let costoAccumulatoCorrente = dati.costoProp;
+                let scaglioniHTML = '';
+                
+                let r_factor = 0;
+                if(dati.drawdown > 0 && dati.frazionamento > 0) {
+                    r_factor = (dati.target / dati.frazionamento) / dati.drawdown;
+                }
+
+                let effective_costo_fase = dati.costoProp; 
+
+                for(let step = 1; step <= dati.frazionamento; step++) {
+                    
+                    if (isDinamico) {
+                        let spesaScaglione = costoAccumulatoCorrente * r_factor;
+                        spesaFaseBase += spesaScaglione;
+                        
+                        if(id === faseAttualeId) {
+                            scaglioniHTML += `
+                                <tr>
+                                    <td><div class="step-circle">${step}</div></td>
+                                    <td>$${spesaScaglione.toFixed(2)}</td>
+                                    <td><input type="text" value="${tpAuto.toFixed(2)}" readonly style="background:#1e293b; color:#94a3b8; border:1px solid #334155; width:90px;"></td>
+                                    <td style="color:#94a3b8;">🔒 $${costoAccumulatoCorrente.toFixed(2)}</td>
+                                </tr>
+                            `;
+                        }
+                        if(step === 1) effective_costo_fase = dati.costoProp;
+                        costoAccumulatoCorrente *= (1 + r_factor);
+                        
+                    } else {
+                        let override_str = dati.overrides[step] !== undefined ? dati.overrides[step] : "";
+                        let calc_base = override_str !== "" ? parseFloat(override_str) : dati.costoProp;
+
+                        if (step === 1) effective_costo_fase = calc_base; 
+
+                        let spesaScaglione = calc_base * r_factor;
+                        spesaFaseBase += spesaScaglione;
+                        
+                        if(id === faseAttualeId) {
+                            scaglioniHTML += `
+                                <tr>
+                                    <td><div class="step-circle">${step}</div></td>
+                                    <td>$${spesaScaglione.toFixed(2)}</td>
+                                    <td><input type="text" value="${tpAuto.toFixed(2)}" readonly style="background:#1e293b; color:#94a3b8; border:1px solid #334155; width:90px;"></td>
+                                    <td style="color:#94a3b8;">$${dati.costoProp.toFixed(2)}</td>
+                                    <td><input type="number" value="${override_str}" placeholder="${dati.costoProp.toFixed(2)}" oninput="updateOverride(${step}, this.value)" style="width:100px; background:#0f172a; color:#fff; border:1px solid #475569; padding:5px; border-radius:4px;"></td>
+                                </tr>
+                            `;
+                        }
+                    }
+                }
+                
+                if(id === faseAttualeId) {
+                    let theadHTML = '';
+                    if(isDinamico) {
+                        theadHTML = `<tr><th>Step</th><th>Spesa Scaglione</th><th>TP (Auto)</th><th>Costo Accumulato</th></tr>`;
+                    } else {
+                        theadHTML = `<tr><th>Step</th><th>Spesa Scaglione</th><th>TP (Auto)</th><th>Costo Step (Teorico)</th><th>Override Costo</th></tr>`;
+                    }
+                    document.getElementById('theadScaglioni').innerHTML = theadHTML;
+                }
+                
+                // Maggiorazione 15% automatica (Solo Challenge e Solo Statico)
+                let spesaFaseReale = spesaFaseBase;
+                if (!isDinamico && !isFunded) {
+                    spesaFaseReale = spesaFaseBase * 1.15;
+                }
+                
+                spesaTotaleHedge += spesaFaseReale;
+                
+                // --- MOTORE CUMULATIVO ---
+                let bilancioPrecedente = bilancioCumulato;
+                
+                if(id === "Ch1") bilancioCumulato += dati.costoPartenza;
+                bilancioCumulato += spesaFaseReale; 
+                
+                if(bilancioCumulato > esposizioneMaxGlobale) {
+                    esposizioneMaxGlobale = bilancioCumulato;
+                }
+                
+                let payoutReale = 0;
+                if(isFunded) {
+                    payoutReale = targetAssoluto * (dati.profitSplit / 100);
+                    bilancioCumulato -= payoutReale;
+                }
+
+                // --- AGGIORNAMENTO UI FASE CORRENTE ---
+                if(id === faseAttualeId) {
+                    document.getElementById('tabellaScaglioni').innerHTML = scaglioniHTML;
+                    
+                    document.getElementById('resSpesa').innerText = '$' + spesaFaseReale.toFixed(2);
+                    document.getElementById('resDeposito').innerText = '$' + spesaFaseReale.toFixed(2);
+                    document.getElementById('subSpesa').innerText = (!isDinamico && !isFunded) ? 'Aumentato +15%' : '';
+                    
+                    document.getElementById('resEsposizione').innerText = '$' + esposizioneMaxGlobale.toFixed(2);
+                    
+                    // --- CORREZIONE BILANCIO IN VERDE ---
+                    const elBilancio = document.getElementById('resBilancio');
+                    const iconBilancio = document.getElementById('iconBilancio');
+                    if(bilancioCumulato <= 0) {
+                        // Siamo in Profitto Netto
+                        let profittoNetto = Math.abs(bilancioCumulato);
+                        elBilancio.innerText = '+$' + profittoNetto.toFixed(2);
+                        elBilancio.className = "result-value text-green";
+                        iconBilancio.className = "result-icon icon-green";
+                    } else {
+                        // Siamo ancora in Debito
+                        elBilancio.innerText = '-$' + bilancioCumulato.toFixed(2);
+                        elBilancio.className = "result-value text-red";
+                        iconBilancio.className = "result-icon icon-red";
+                    }
+                    
+                    let guadagnoBruciatura = 0;
+                    let propSubTesto = "";
+                    
+                    if(id === "Ch1") {
+                        const surplusLordo = effective_costo_fase - dati.costoPartenza;
+                        if(surplusLordo > 0) guadagnoBruciatura = surplusLordo * 0.90; 
+                        propSubTesto = `Proporzionale a $${effective_costo_fase.toFixed(0)}`;
+                    } else if(isFunded) {
+                        guadagnoBruciatura = effective_costo_fase * 0.90;
+                        propSubTesto = `Proporzionale a $${effective_costo_fase.toFixed(0)}`;
+                    } else {
+                        const trattenuta = effective_costo_fase * 0.10;
+                        guadagnoBruciatura = effective_costo_fase - bilancioPrecedente - trattenuta;
+                        propSubTesto = `Proporzionale a $${effective_costo_fase.toFixed(0)}`;
+                    }
+                    
+                    document.getElementById('resGuadagno').innerText = '+$' + guadagnoBruciatura.toFixed(2);
+                    document.getElementById('subGuadagno').innerText = propSubTesto;
+                    
+                    if(isFunded) {
+                        document.getElementById('resPayout').innerText = '+$' + payoutReale.toFixed(2);
+                        
+                        const guadagnoFineCicloReale = (effective_costo_fase * 0.90) - bilancioPrecedente;
+                        
+                        const elGuadagnoFine = document.getElementById('resGuadagnoFineCiclo');
+                        if(guadagnoFineCicloReale >= 0) {
+                            elGuadagnoFine.innerText = '+$' + guadagnoFineCicloReale.toFixed(2);
+                            elGuadagnoFine.className = "result-value text-green";
+                        } else {
+                            elGuadagnoFine.innerText = '-$' + Math.abs(guadagnoFineCicloReale).toFixed(2);
+                            elGuadagnoFine.className = "result-value text-red";
+                        }
+                    }
+                }
+            }
+            
+            document.getElementById('totAcquisto').innerText = '$' + costoAcquistoIniziale.toFixed(2);
+            document.getElementById('totHedge').innerText = '$' + spesaTotaleHedge.toFixed(2);
+            document.getElementById('totEsposizione').innerText = '-$' + esposizioneMaxGlobale.toFixed(2);
+            document.getElementById('totFinale').innerText = '$' + valoreAccountFinale.toFixed(2);
+            
+            // Richiama la funzione di salvataggio automatico alla fine di ogni calcolo
+            salvaStorage();
+        }
+
+        window.onload = inizializzaDati;
+    </script>
+</body>
+</html>
